@@ -42,7 +42,39 @@ db.once("open", function() {
 
 // ROUTES: 
 
+app.get("/scrape", function(req, res){
 
+	request("https://news.ycombinator.com/", function(err, response, html){
+
+		var $ = cheerio.load(html);
+
+		$("td.title").each(function(i, element) {
+
+			var result = {};
+
+			var result.title = $(this).find("a.storylink").text();
+			var result.newsLink = $(this).find("a.storylink").attr("href");
+
+			if ( result.title == "" || result.title == null || result.newsLink == "" || result.newsLink == null) {
+				return;
+			}
+			else {
+				var entry = new Article(result);
+			    entry.save(function(err, doc) {
+			        // Log any errors
+			        if (err) {
+			          console.log(err);
+			        }
+			        // Or log the doc
+			        else {
+			          console.log(doc);
+			        }
+			    });
+  			}	
+		});
+	});
+	res.send("Scrape Complete");
+});
 
 
 
